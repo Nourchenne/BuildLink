@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="fr"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Mes Livraisons — BuildLink</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <link rel="stylesheet" th:href="@{/css/accessibility.css}"/>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="top-nav">
+    <a th:href="@{/}" class="brand">🏗️ BuildLink</a>
+    <div class="nav-right">
+        <div class="notif-wrap">
+            <a th:href="@{/notifications}" class="notif-btn" title="Notifications">🔔
+                <span class="notif-badge" th:if="${unreadNotifications != null and unreadNotifications > 0}" th:text="${unreadNotifications}"></span>
+            </a>
+        </div>
+        <div class="user-chip">
+            <div class="avatar-sm" th:text="${currentUser != null ? #strings.substring(currentUser.fullName,0,1).toUpperCase() : 'U'}">C</div>
+            <span class="user-name-text" th:text="${currentUser != null ? currentUser.fullName : ''}"></span>
+        </div>
+        <form th:action="@{/auth/logout}" method="post" style="display:inline">
+            <button type="submit" class="logout-link">Déconnexion</button>
+        </form>
+    </div>
+</nav>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+    <div class="sidebar-user-block">
+        <div class="avatar-sm" th:text="${currentUser != null ? #strings.substring(currentUser.fullName,0,1).toUpperCase() : 'U'}">C</div>
+        <div class="sidebar-user-meta">
+            <div class="sidebar-user-name" th:text="${currentUser != null ? currentUser.fullName : ''}"></div>
+            <div class="sidebar-user-role">Client</div>
+        </div>
+    </div>
+    <div class="sidebar-section-label">Navigation</div>
+    <a th:href="@{/client/dashboard}" class="sidebar-link"><span class="sl-icon">🏠</span> Dashboard</a>
+    <a th:href="@{/client/projects}" class="sidebar-link"><span class="sl-icon">📋</span> Mes Projets</a>
+    <a th:href="@{/client/projects/new}" class="sidebar-link"><span class="sl-icon">➕</span> Nouveau Projet</a>
+    <a th:href="@{/client/architects}" class="sidebar-link"><span class="sl-icon">🏛️</span> Trouver un architecte</a>
+    <a th:href="@{/client/deliveries}" class="sidebar-link active"><span class="sl-icon">📦</span> Mes Livraisons</a>
+    <a th:href="@{/messages}" class="sidebar-link"><span class="sl-icon">💬</span> Messages</a>
+    <a th:href="@{/notifications}" class="sidebar-link"><span class="sl-icon">🔔</span> Notifications</a>
+    <a th:href="@{/client/tracking}" class="sidebar-link"><span class="sl-icon">📊</span> Suivi des projets</a>
+    <div style="flex:1"></div>
+    <div class="sidebar-divider"></div>
+    <form th:action="@{/auth/logout}" method="post" style="padding:0 8px">
+        <button type="submit" class="sidebar-link sidebar-logout"><span class="sl-icon">🚪</span> Déconnexion</button>
+    </form>
+</aside>
+
+<!-- MAIN -->
+<main class="main-content">
+    <div class="page-shell-medium">
+
+        <h2 style="font-family:'Playfair Display',serif;margin-bottom:8px;">📦 Mes Livraisons</h2>
+        <p style="color:var(--text-muted);font-size:14px;margin-bottom:28px;">
+            Suivez vos commandes et confirmez la réception des matériaux sur vos chantiers
+        </p>
+
+        <!-- Messages de succès/erreur -->
+        <div th:if="${success}" class="alert alert-success" style="margin-bottom:20px;" th:text="${success}"></div>
+        <div th:if="${error}" class="alert alert-error" style="margin-bottom:20px;" th:text="${error}"></div>
+
+        <!-- À propos des livraisons -->
+        <div style="background:var(--primary-light);padding:16px;border-radius:12px;margin-bottom:32px;font-size:13.5px;line-height:1.7;">
+            <div style="display:flex;gap:10px;align-items:flex-start;">
+                <div style="font-size:20px;">🚚</div>
+                <div>
+                    <strong>À propos des livraisons</strong>
+                    <p style="margin:6px 0 0 0;color:var(--text-muted);">
+                        Quand le fournisseur marque une commande comme <strong>"Expédiée"</strong>, vous devez <strong>confirmer la réception</strong> quand les matériaux arrivent sur votre chantier. Cela notifiera le fournisseur et l'architecte que tout est bien arrivé.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtres -->
+        <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+            <a th:href="@{/client/deliveries}" class="badge badge-primary" style="cursor:pointer;">Toutes</a>
+            <a th:href="@{/client/deliveries(status='SHIPPED')}" class="badge badge-amber" style="cursor:pointer;">🚚 En livraison</a>
+            <a th:href="@{/client/deliveries(status='DELIVERED')}" class="badge badge-success" style="cursor:pointer;">✅ Livrées</a>
+        </div>
+
+        <!-- Liste des commandes -->
+        <div th:if="${orders == null or orders.isEmpty()}" style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+            <div style="font-size:48px;margin-bottom:12px;">📭</div>
+            <div style="font-size:16px;">Aucune livraison pour le moment</div>
+        </div>
+
+        <div th:if="${orders != null and !orders.isEmpty()}">
+            <div th:each="order : ${orders}" class="form-card" style="margin-bottom:16px;"
+                 th:with="statusName=${order.status.name()},
+                          badgeClass=${statusName == 'PENDING' ? 'badge-neutral' : (statusName == 'CONFIRMED' ? 'badge-info' : (statusName == 'PREPARING' ? 'badge-amber' : (statusName == 'SHIPPED' ? 'badge-warning' : (statusName == 'DELIVERED' ? 'badge-success' : 'badge-error'))))},
+                          statusText=${statusName == 'PENDING' ? '⏳ En attente' : (statusName == 'CONFIRMED' ? '✅ Confirmée' : (statusName == 'PREPARING' ? '📦 En préparation' : (statusName == 'SHIPPED' ? '🚚 En livraison' : (statusName == 'DELIVERED' ? '✅ Livrée' : '❌ Refusée'))))}">
+
+                <!-- En-tête avec statut -->
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
+                    <div>
+                        <h3 style="margin:0 0 4px 0;font-size:16px;" th:text="${order.materialItem.name}">Matériau</h3>
+                        <div style="font-size:13px;color:var(--text-muted);">
+                            Projet : <strong th:text="${order.project.title}">Nom du projet</strong>
+                        </div>
+                    </div>
+                    <span class="badge" th:classappend="${badgeClass}" th:text="${statusText}">
+                        Statut
+                    </span>
+                </div>
+
+                <!-- Détails de la commande -->
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:16px;">
+                    <div>
+                        <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">QUANTITÉ</div>
+                        <div style="font-size:15px;font-weight:600;" th:text="${order.quantity} + ' ' + ${order.materialItem.unit}">0 unités</div>
+                    </div>
+                    <div>
+                        <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">PRIX UNITAIRE</div>
+                        <div style="font-size:15px;font-weight:600;" th:text="${order.unitPrice} + ' DT'">0 DT</div>
+                    </div>
+                    <div>
+                        <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">TOTAL</div>
+                        <div style="font-size:16px;font-weight:700;color:var(--primary);" th:text="${order.totalPrice} + ' DT'">0 DT</div>
+                    </div>
+                </div>
+
+                <!-- Fournisseur -->
+                <div style="padding:12px;background:var(--bg);border-radius:8px;margin-bottom:16px;">
+                    <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;">FOURNISSEUR</div>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <div class="avatar-sm" style="width:32px;height:32px;" th:text="${#strings.substring(order.supplier.fullName,0,1).toUpperCase()}">F</div>
+                        <div>
+                            <div style="font-weight:600;font-size:14px;" th:text="${order.supplier.fullName}">Nom fournisseur</div>
+                            <div style="font-size:12px;color:var(--text-muted);" th:text="${order.supplier.email}">email@example.com</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Adresse de livraison -->
+                <div style="padding:12px;background:var(--bg);border-radius:8px;margin-bottom:16px;">
+                    <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;">📍 ADRESSE DE LIVRAISON</div>
+                    <div style="font-size:14px;" th:text="${order.deliveryAddress}">Adresse</div>
+                </div>
+
+                <!-- Notes -->
+                <div th:if="${order.notes != null and !order.notes.isEmpty()}"
+                     style="padding:12px;background:var(--bg);border-radius:8px;margin-bottom:16px;">
+                    <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;">📝 NOTES</div>
+                    <div style="font-size:13px;color:var(--text-muted);" th:text="${order.notes}">Notes</div>
+                </div>
+
+                <!-- Actions -->
+                <div style="display:flex;gap:12px;padding-top:12px;border-top:1px solid var(--border-light);">
+                    <!-- Message d'aide pour les commandes en livraison -->
+                    <div th:if="${statusName == 'SHIPPED'}"
+                         style="flex:1;padding:12px;background:#fff3cd;color:#856404;border-radius:8px;font-size:13px;line-height:1.5;margin-bottom:12px;">
+                        📦 <strong>Commande en cours de livraison</strong><br/>
+                        Une fois que vous avez reçu les matériaux sur votre chantier, cliquez sur le bouton ci-dessous pour confirmer la réception. Cela notifiera le fournisseur et l'architecte que la livraison est terminée.
+                    </div>
+                </div>
+
+                <div style="display:flex;gap:12px;">
+                    <!-- Bouton confirmer livraison terminée (uniquement si SHIPPED) -->
+                    <form th:if="${statusName == 'SHIPPED'}"
+                          th:action="@{/client/orders/{id}/confirm-delivery(id=${order.id})}"
+                          method="post" style="flex:1;">
+                        <button type="submit" class="btn btn-success" style="width:100%;">
+                            ✅ Livraison terminée - Confirmer la réception
+                        </button>
+                    </form>
+
+                    <!-- Message si déjà livrée -->
+                    <div th:if="${statusName == 'DELIVERED'}"
+                         style="flex:1;padding:10px;background:#d4edda;color:#155724;border-radius:8px;text-align:center;font-size:14px;">
+                        ✅ Réception confirmée le <span th:text="${#temporals.format(order.updatedAt,'dd/MM/yyyy')}"></span>
+                    </div>
+
+                    <!-- Voir projet -->
+                    <a th:href="@{/client/projects/{id}(id=${order.project.id})}" class="btn btn-ghost">
+                        Voir le projet →
+                    </a>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</main>
+
+</body>
+</html>
+

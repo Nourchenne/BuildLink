@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="fr"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Suivi du plan — BuildLink</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <link rel="stylesheet" th:href="@{/css/accessibility.css}"/>
+</head>
+<body>
+
+<nav class="top-nav">
+    <a th:href="@{/}" class="brand">🏗️ BuildLink</a>
+    <div class="nav-right">
+        <div class="notif-wrap">
+      <a th:href="@{/notifications}" class="notif-btn" title="Notifications">🔔
+        <span class="notif-badge" th:if="${unreadNotifications != null and unreadNotifications > 0}" th:text="${unreadNotifications}"></span>
+      </a>
+    </div>
+    <div class="user-chip">
+            <div class="avatar-sm" th:text="${currentUser != null ? #strings.substring(currentUser.fullName,0,1).toUpperCase() : 'U'}">A</div>
+            <span class="user-name-text" th:text="${currentUser != null ? currentUser.fullName : ''}"  ></span>
+        </div>
+        <form th:action="@{/auth/logout}" method="post" style="display:inline">
+            <button type="submit" class="logout-link">Déconnexion</button>
+        </form>
+    </div>
+</nav>
+
+<aside class="sidebar">
+  <div class="sidebar-user-block">
+    <div class="avatar-sm" th:text="${currentUser != null ? #strings.substring(currentUser.fullName,0,1).toUpperCase() : 'U'}">A</div>
+    <div class="sidebar-user-meta">
+      <div class="sidebar-user-name" th:text="${currentUser != null ? currentUser.fullName : ''}"></div>
+      <div class="sidebar-user-role">Architecte</div>
+    </div>
+  </div>
+  <div class="sidebar-section-label">Navigation</div>
+  <a th:href="@{/architect/dashboard}" class="sidebar-link"><span class="sl-icon">📐</span> Dashboard</a>
+  <a th:href="@{/architect/projects}" class="sidebar-link active"><span class="sl-icon">📋</span> Mes Projets</a>
+  <a th:href="@{/architect/catalog}" class="sidebar-link"><span class="sl-icon">🏪</span> Catalogue fournisseurs</a>
+  <a th:href="@{/architect/requests}" class="sidebar-link"><span class="sl-icon">📢</span> Mes Demandes</a>
+  <a th:href="@{/messages}" class="sidebar-link"><span class="sl-icon">💬</span> Messages</a>
+  <a th:href="@{/notifications}" class="sidebar-link"><span class="sl-icon">🔔</span> Notifications</a>
+  <a th:href="@{/architect/tracking}" class="sidebar-link"><span class="sl-icon">📊</span> Suivi des commandes</a>
+  <div style="flex:1"></div>
+  <div class="sidebar-divider"></div>
+  <form th:action="@{/auth/logout}" method="post" style="padding:0 8px">
+    <button type="submit" class="sidebar-link sidebar-logout"><span class="sl-icon">🚪</span> Déconnexion</button>
+  </form>
+</aside>
+
+<main class="main-content">
+    <div class="page-shell-wide">
+
+        <!-- Breadcrumb -->
+        <div class="breadcrumb" style="margin-bottom:20px;">
+            <a th:href="@{/architect/projects}">Projets</a>
+            <span>›</span>
+            <a th:href="@{/architect/projects/{id}(id=${project.id})}"
+               th:text="${project.title}">Projet</a>
+            <span>›</span>
+            <span style="color:var(--text)">Suivi détaillé</span>
+        </div>
+
+        <!-- Header -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+            <div>
+                <h1 style="font-family:'Playfair Display',serif;">📊 Suivi du Plan</h1>
+                <p style="color:var(--text-muted);font-size:14px;margin-top:4px;" th:text="${project.title}">Projet</p>
+            </div>
+            <span class="badge"
+                  th:classappend="${project.status.name() == 'INQUIRY'       ? 'badge-amber'   :
+                                  project.status.name() == 'PLANNING'      ? 'badge-info'    :
+                                  project.status.name() == 'PLAN_SENT'     ? 'badge-amber'   :
+                                  project.status.name() == 'PLAN_APPROVED' ? 'badge-success' :
+                                  project.status.name() == 'INVOICE_SENT'  ? 'badge-amber'   :
+                                  project.status.name() == 'ORDERED'       ? 'badge-info'    :
+                                  project.status.name() == 'COMPLETED'     ? 'badge-success' : 'badge-danger'}"
+                  th:text="${project.status.name() == 'INQUIRY'       ? '⏳ En attente'       :
+                             project.status.name() == 'PLANNING'      ? '📐 Planification'    :
+                             project.status.name() == 'PLAN_SENT'     ? '📋 Plan à approuver' :
+                             project.status.name() == 'PLAN_APPROVED' ? '✅ Plan approuvé'    :
+                             project.status.name() == 'INVOICE_SENT'  ? '🧾 Facture envoyée'  :
+                             project.status.name() == 'ORDERED'       ? '🚚 En livraison'     :
+                             project.status.name() == 'COMPLETED'     ? '🏆 Terminé'          : '❌ Annulé'}">STATUT</span>
+        </div>
+
+        <!-- Info flux -->
+        <div style="background:var(--primary-light);border:1px solid rgba(139,94,60,0.2);border-radius:12px;padding:16px 20px;margin-bottom:24px;font-size:13px;">
+            <div style="font-weight:700;color:var(--primary);margin-bottom:8px;">📋 Flux de commande des matériaux</div>
+            <div style="color:var(--text);line-height:1.6;">
+                <span style="font-weight:600;">⏳ En attente</span> →
+                <span style="font-weight:600;color:var(--success);">✅ Confirmé</span> →
+                <span style="font-weight:600;">🔧 En préparation</span> →
+                <span style="font-weight:600;">🚛 Expédié</span> →
+                <span style="font-weight:600;color:var(--success);">📦 Livré</span>
+            </div>
+        </div>
+
+        <!-- Liste des matériaux -->
+        <div th:if="${materials.isEmpty()}" class="empty-state">
+            <div class="empty-icon">📦</div>
+            <h3 style="font-family:'Playfair Display',serif;margin-bottom:8px;">Aucun matériau</h3>
+            <p>Le plan n'a pas encore été créé pour ce projet.</p>
+        </div>
+
+        <div th:unless="${materials.isEmpty()}">
+            <div th:each="material : ${materials}" class="post-card" style="margin-bottom:12px;">
+                <div style="display:grid;grid-template-columns:1fr auto;gap:20px;align-items:start;">
+
+                    <!-- Info matériau -->
+                    <div>
+                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                            <span style="font-weight:800;font-size:15px;" th:text="${material.name}">Matériau</span>
+                            <span class="badge badge-neutral" style="font-size:10px;" th:text="${material.type}">Type</span>
+                        </div>
+
+                        <div style="display:flex;gap:20px;font-size:13px;color:var(--text-muted);flex-wrap:wrap;margin-bottom:8px;">
+                            <span>📦 <b th:text="${material.quantity}">0</b> <span th:text="${material.unit}">u</span></span>
+                            <span>💰 <b th:text="${#numbers.formatDecimal(material.estimatedPrice,1,2)} + ' DT/unité'">0</b></span>
+                            <span style="color:var(--primary);font-weight:700;">
+                                Total : <span th:text="${#numbers.formatDecimal(material.quantity * material.estimatedPrice,1,2)} + ' DT'">0</span>
+                            </span>
+                        </div>
+
+                        <!-- Fournisseur -->
+                        <div style="font-size:13px;margin-bottom:12px;">
+                            <span th:if="${material.supplier != null}" style="color:var(--text-muted);">
+                                🏭 Fournisseur : <b th:text="${material.supplier.fullName}">Fournisseur</b>
+                            </span>
+                            <span th:unless="${material.supplier != null}" style="color:var(--danger);font-weight:600;">
+                                ⚠️ Matériau hors catalogue (aucun fournisseur assigné)
+                            </span>
+                        </div>
+
+                        <!-- Description -->
+                        <div th:if="${material.description}" style="font-size:12px;color:var(--text-muted);font-style:italic;"
+                             th:text="${material.description}">Description</div>
+                    </div>
+
+                    <!-- Statut de la commande -->
+                    <div style="min-width:200px;">
+                        <div th:with="order=${materialOrderMap.get(material.id)}">
+
+                            <!-- Commande existante -->
+                            <div th:if="${order != null}">
+                                <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;">
+                                    Statut commande
+                                </div>
+                                <span class="badge"
+                                      th:classappend="${order.status.name() == 'PENDING'    ? 'badge-amber'   :
+                                                        order.status.name() == 'CONFIRMED'  ? 'badge-success' :
+                                                        order.status.name() == 'PREPARING'  ? 'badge-info'    :
+                                                        order.status.name() == 'SHIPPED'    ? 'badge-neutral' :
+                                                        order.status.name() == 'DELIVERED'  ? 'badge-success' :
+                                                        order.status.name() == 'REJECTED'   ? 'badge-danger'  : 'badge-neutral'}"
+                                      th:text="${order.status.name() == 'PENDING'    ? '⏳ En attente'       :
+                                                 order.status.name() == 'CONFIRMED'  ? '✅ Confirmé'         :
+                                                 order.status.name() == 'PREPARING'  ? '🔧 En préparation'   :
+                                                 order.status.name() == 'SHIPPED'    ? '🚛 Expédié'          :
+                                                 order.status.name() == 'DELIVERED'  ? '📦 Livré'            :
+                                                 order.status.name() == 'REJECTED'   ? '❌ Refusé'           : order.status.name()}"
+                                      style="display:block;text-align:center;">STATUT</span>
+                                <div style="font-size:11px;color:var(--text-muted);margin-top:8px;">
+                                    Mise à jour : <span th:text="${#temporals.format(order.updatedAt, 'dd/MM/yyyy HH:mm')}">Date</span>
+                                </div>
+                                <!-- Message si refusé -->
+                                <div th:if="${order.status.name() == 'REJECTED'}"
+                                     style="margin-top:8px;padding:8px;background:#FEF2F2;border:1px solid #DC2626;border-radius:6px;font-size:11px;color:#DC2626;font-weight:600;">
+                                    ⚠️ Trouvez un nouveau fournisseur via le marketplace
+                                </div>
+                            </div>
+
+                            <!-- Pas de commande (à sourcer) -->
+                            <div th:unless="${order != null}">
+                                <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;">
+                                    Statut
+                                </div>
+                                <span class="badge badge-amber" style="display:block;text-align:center;">
+                                    ⚠️ À sourcer
+                                </span>
+                                <div style="font-size:11px;color:var(--text-muted);margin-top:8px;text-align:center;">
+                                    Trouvez un fournisseur via le marketplace
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <a th:href="@{/architect/projects/{id}(id=${project.id})}"
+           class="btn btn-ghost" style="margin-top:20px;">← Retour au projet</a>
+
+    </div>
+</main>
+</body>
+</html>
+

@@ -1,0 +1,145 @@
+﻿<!DOCTYPE html>
+<html lang="fr"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nouveau Projet — BuildLink</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+  <link rel="stylesheet" th:href="@{/css/accessibility.css}"/>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="top-nav">
+  <a th:href="@{/}" class="brand">🏗️ BuildLink</a>
+  <div class="nav-right">
+    <div class="notif-wrap">
+      <a th:href="@{/notifications}" class="notif-btn" title="Notifications">🔔
+        <span class="notif-badge" th:if="${unreadNotifications != null and unreadNotifications > 0}" th:text="${unreadNotifications}"></span>
+      </a>
+    </div>
+    <div class="user-chip">
+      <div class="avatar-sm" th:text="${currentUser != null ? #strings.substring(currentUser.fullName,0,1).toUpperCase() : 'U'}">C</div>
+      <span class="user-name-text" th:text="${currentUser != null ? currentUser.fullName : ''}"  ></span>
+    </div>
+    <form th:action="@{/auth/logout}" method="post" style="display:inline">
+      <button type="submit" class="logout-link">Déconnexion</button>
+    </form>
+  </div>
+</nav>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-user-block">
+    <div class="avatar-sm" th:text="${currentUser != null ? #strings.substring(currentUser.fullName,0,1).toUpperCase() : 'U'}">C</div>
+    <div class="sidebar-user-meta">
+      <div class="sidebar-user-name" th:text="${currentUser != null ? currentUser.fullName : ''}"></div>
+      <div class="sidebar-user-role">Client</div>
+    </div>
+  </div>
+  <div class="sidebar-section-label">Navigation</div>
+  <a th:href="@{/client/dashboard}" class="sidebar-link"><span class="sl-icon">🏠</span> Dashboard</a>
+  <a th:href="@{/client/projects}" class="sidebar-link"><span class="sl-icon">📋</span> Mes Projets</a>
+  <a th:href="@{/client/projects/new}" class="sidebar-link active"><span class="sl-icon">➕</span> Nouveau Projet</a>
+  <a th:href="@{/client/architects}" class="sidebar-link"><span class="sl-icon">🏛️</span> Trouver un architecte</a>
+  <a th:href="@{/client/deliveries}" class="sidebar-link"><span class="sl-icon">📦</span> Mes Livraisons</a>
+  <a th:href="@{/messages}" class="sidebar-link"><span class="sl-icon">💬</span> Messages</a>
+  <a th:href="@{/notifications}" class="sidebar-link"><span class="sl-icon">🔔</span> Notifications</a>
+  <a th:href="@{/client/tracking}" class="sidebar-link"><span class="sl-icon">📊</span> Suivi des projets</a>
+  <div style="flex:1"></div>
+  <div class="sidebar-divider"></div>
+  <form th:action="@{/auth/logout}" method="post" style="padding:0 8px">
+    <button type="submit" class="sidebar-link sidebar-logout"><span class="sl-icon">🚪</span> Déconnexion</button>
+  </form>
+</aside>
+
+<!-- MAIN -->
+<main class="main-content">
+  <div class="page-shell-medium">
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb" style="margin-bottom:20px;">
+      <a th:href="@{/client/projects}">Mes projets</a>
+      <span>›</span>
+      <span style="color:var(--text)">Nouveau projet</span>
+    </div>
+
+    <div class="form-card">
+      <h2 style="font-family:'Playfair Display',serif;margin-bottom:6px;">📝 Nouveau Projet</h2>
+      <p style="color:var(--text-muted);font-size:14px;margin-bottom:28px;">
+        Décrivez votre projet et choisissez un architecte. Il recevra votre demande et vous contactera.
+      </p>
+
+      <form th:action="@{/client/projects/new}" th:object="${projectDTO}" method="post">
+
+        <!-- Validation errors -->
+        <div th:if="${#fields.hasErrors('*')}" class="alert alert-error" style="margin-bottom:20px;">
+          <div th:each="err : ${#fields.errors('*')}" th:text="${err}"></div>
+        </div>
+
+
+        <div class="form-section-label">Informations du projet</div>
+
+        <div class="form-group">
+          <label for="title">Titre du projet <span style="color:var(--danger)">*</span></label>
+          <input type="text" id="title" th:field="*{title}"
+                 placeholder="Ex: Construction villa 3 chambres à Tunis" required maxlength="200"/>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Donnez un nom clair à votre projet (max 200 caractères)</div>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Description</label>
+          <textarea id="description" th:field="*{description}" rows="4"
+                    placeholder="Décrivez votre projet : surface, nombre de pièces, style souhaité, contraintes particulières..." maxlength="2000"></textarea>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Plus votre description est précise, mieux l'architecte pourra vous répondre</div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div class="form-group">
+            <label for="location">Lieu du chantier <span style="color:var(--danger)">*</span></label>
+            <input type="text" id="location" th:field="*{location}"
+                   placeholder="Ex: Tunis, Ariana, Sfax..." required maxlength="300"/>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Cette adresse servira aussi d'adresse de livraison des matériaux</div>
+          </div>
+          <div class="form-group">
+            <label for="budget">Budget estimé (DT)</label>
+            <input type="number" id="budget" th:field="*{budget}" step="100" min="0"
+                   placeholder="Ex: 150000"/>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Optionnel — aide l'architecte à adapter sa proposition</div>
+          </div>
+        </div>
+
+        <div class="form-section-label" style="margin-top:28px;">Choisir un architecte</div>
+
+        <div class="form-group">
+          <label for="architectId">Architecte <span style="color:var(--danger)">*</span></label>
+          <select id="architectId" th:field="*{architectId}" required>
+            <option value="">— Sélectionner un architecte —</option>
+            <option th:each="arch : ${architects}"
+                    th:value="${arch.id}"
+                    th:text="${arch.fullName + ' — ' + arch.email}">
+            </option>
+          </select>
+          <div style="margin-top:8px;padding:12px;background:var(--primary-light);border-radius:var(--radius-sm);font-size:12px;color:var(--primary);">
+            💡 L'architecte recevra une notification et pourra accepter ou refuser votre demande. Vous pouvez aussi lui envoyer un message directement via la section <strong>Messages</strong>.
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;margin-top:28px;">
+          <button type="submit" class="btn btn-primary">
+            Envoyer la demande →
+          </button>
+          <a th:href="@{/client/projects}" class="btn btn-ghost">Annuler</a>
+        </div>
+
+      </form>
+    </div>
+
+  </div>
+</main>
+
+</body>
+</html>

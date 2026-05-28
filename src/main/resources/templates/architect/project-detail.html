@@ -1,0 +1,224 @@
+﻿<!DOCTYPE html>
+<html lang="fr"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Détail Projet — BuildLink</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+  <link rel="stylesheet" th:href="@{/css/accessibility.css}"/>
+</head>
+<body>
+
+<nav class="top-nav">
+  <a th:href="@{/}" class="brand">🏗️ BuildLink</a>
+  <div class="nav-right">
+    <div class="notif-wrap">
+      <a th:href="@{/notifications}" class="notif-btn" title="Notifications">🔔
+        <span class="notif-badge" th:if="${unreadNotifications != null and unreadNotifications > 0}" th:text="${unreadNotifications}"></span>
+      </a>
+    </div>
+    <div class="user-chip">
+      <div class="avatar-sm" th:text="${currentUser != null ? #strings.substring(currentUser.fullName,0,1).toUpperCase() : 'U'}">A</div>
+      <span class="user-name-text" th:text="${currentUser != null ? currentUser.fullName : ''}"  ></span>
+    </div>
+    <form th:action="@{/auth/logout}" method="post" style="display:inline">
+      <button type="submit" class="logout-link">Déconnexion</button>
+    </form>
+  </div>
+</nav>
+
+<aside class="sidebar">
+  <div class="sidebar-user-block">
+    <div class="avatar-sm" th:text="${currentUser != null ? #strings.substring(currentUser.fullName,0,1).toUpperCase() : 'U'}">A</div>
+    <div class="sidebar-user-meta">
+      <div class="sidebar-user-name" th:text="${currentUser != null ? currentUser.fullName : ''}"></div>
+      <div class="sidebar-user-role">Architecte</div>
+    </div>
+  </div>
+  <div class="sidebar-section-label">Navigation</div>
+  <a th:href="@{/architect/dashboard}" class="sidebar-link"><span class="sl-icon">📐</span> Dashboard</a>
+  <a th:href="@{/architect/projects}" class="sidebar-link active"><span class="sl-icon">📋</span> Mes Projets</a>
+  <a th:href="@{/architect/catalog}" class="sidebar-link"><span class="sl-icon">🏪</span> Catalogue fournisseurs</a>
+  <a th:href="@{/architect/requests}" class="sidebar-link"><span class="sl-icon">📢</span> Mes Demandes</a>
+  <a th:href="@{/messages}" class="sidebar-link"><span class="sl-icon">💬</span> Messages</a>
+  <a th:href="@{/notifications}" class="sidebar-link"><span class="sl-icon">🔔</span> Notifications</a>
+  <a th:href="@{/architect/tracking}" class="sidebar-link"><span class="sl-icon">📊</span> Suivi des commandes</a>
+  <div style="flex:1"></div>
+  <div class="sidebar-divider"></div>
+  <form th:action="@{/auth/logout}" method="post" style="padding:0 8px">
+    <button type="submit" class="sidebar-link sidebar-logout"><span class="sl-icon">🚪</span> Déconnexion</button>
+  </form>
+</aside>
+
+<main class="main-content">
+  <div class="page-shell-medium">
+
+    <!-- Flash messages -->
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+    <div th:if="${info}" class="alert alert-info" th:text="${info}"></div>
+
+    <div class="breadcrumb" style="margin-bottom:20px;">
+      <a th:href="@{/architect/projects}">Mes projets</a>
+      <span>›</span>
+      <span style="color:var(--text)" th:text="${project.title}">Projet</span>
+    </div>
+
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:24px;">
+      <div>
+        <h1 style="font-family:'Playfair Display',serif;font-size:28px;" th:text="${project.title}">Titre</h1>
+        <p style="color:var(--text-muted);font-size:14px;margin-top:4px;">
+          Demande reçue le <span th:text="${#temporals.format(project.createdAt, 'dd MMMM yyyy')}">date</span>
+        </p>
+      </div>
+      <span class="badge"
+            th:classappend="${project.status.name() == 'INQUIRY'       ? 'badge-amber'   :
+                              project.status.name() == 'PLANNING'      ? 'badge-info'    :
+                              project.status.name() == 'PLAN_SENT'     ? 'badge-amber'   :
+                              project.status.name() == 'PLAN_APPROVED' ? 'badge-info'    :
+                              project.status.name() == 'INVOICE_SENT'  ? 'badge-amber'   :
+                              project.status.name() == 'ORDERED'       ? 'badge-info'    :
+                              project.status.name() == 'COMPLETED'     ? 'badge-success' :
+                              project.status.name() == 'CANCELLED'     ? 'badge-danger'  : 'badge-neutral'}"
+            th:text="${project.status.name() == 'INQUIRY'       ? '⏳ En attente'       :
+                       project.status.name() == 'PLANNING'      ? '📐 Planification'    :
+                       project.status.name() == 'PLAN_SENT'     ? '📋 Plan à approuver' :
+                       project.status.name() == 'PLAN_APPROVED' ? '✅ Plan approuvé'    :
+                       project.status.name() == 'INVOICE_SENT'  ? '🧾 Facture envoyée'  :
+                       project.status.name() == 'ORDERED'       ? '🚚 En livraison'     :
+                       project.status.name() == 'COMPLETED'     ? '🏆 Terminé'          :
+                       project.status.name() == 'CANCELLED'     ? '❌ Annulé'           : project.status.name()}"
+            style="font-size:13px;padding:8px 16px;">STATUT</span>
+    </div>
+
+    <!-- Actions PLANNING : Gérer le plan -->
+    <div th:if="${project.status.name() == 'PLANNING'}"
+         style="margin-bottom:20px;background:#EBF4FF;border:1px solid rgba(37,99,235,0.2);border-radius:12px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+      <div>
+        <div style="font-weight:700;color:#2563EB;font-size:14px;">📐 Plan de matériaux à préparer</div>
+        <div style="font-size:13px;color:#2563EB;opacity:0.85;margin-top:3px;">Ajoutez les matériaux nécessaires et envoyez le plan au client.</div>
+      </div>
+      <a th:href="@{/architect/projects/{id}/plan(id=${project.id})}"
+         class="btn btn-sm" style="background:#2563EB;color:white;border:none;white-space:nowrap;">
+        📐 Gérer le plan →
+      </a>
+    </div>
+
+    <!-- Actions INQUIRY -->
+    <div th:if="${project.status.name() == 'INQUIRY'}"
+         class="form-card"
+         style="margin-bottom:20px;background:var(--amber-bg);border:1px solid rgba(146,100,28,0.2);">
+      <h3 style="font-size:15px;font-weight:700;color:var(--amber-text);margin-bottom:12px;">
+        ⏳ Demande en attente de votre réponse
+      </h3>
+      <p style="font-size:13px;color:var(--amber-text);margin-bottom:16px;">
+        Le client attend votre décision. Acceptez si vous souhaitez gérer ce projet.
+      </p>
+      <div style="display:flex;gap:10px;">
+        <form th:action="@{/architect/projects/{id}/accept(id=${project.id})}" method="post">
+          <button class="btn btn-primary">✅ Accepter le projet</button>
+        </form>
+        <form th:action="@{/architect/projects/{id}/cancel(id=${project.id})}" method="post">
+          <button class="btn btn-soft-danger">❌ Refuser</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Info cards -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+
+      <div class="form-card">
+        <h3 style="font-size:14px;font-weight:700;margin-bottom:14px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">📋 Détails</h3>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div style="display:flex;justify-content:space-between;font-size:14px;">
+            <span style="color:var(--text-muted);">Lieu</span>
+            <span style="font-weight:600;" th:text="${project.location}">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:14px;">
+            <span style="color:var(--text-muted);">Statut</span>
+            <span style="font-weight:600;"
+                  th:text="${project.status.name() == 'INQUIRY'       ? '⏳ En attente'       :
+                             project.status.name() == 'PLANNING'      ? '📐 Planification'    :
+                             project.status.name() == 'PLAN_SENT'     ? '📋 Plan à approuver' :
+                             project.status.name() == 'PLAN_APPROVED' ? '✅ Plan approuvé'    :
+                             project.status.name() == 'INVOICE_SENT'  ? '🧾 Facture envoyée'  :
+                             project.status.name() == 'ORDERED'       ? '🚚 En livraison'     :
+                             project.status.name() == 'COMPLETED'     ? '🏆 Terminé'          :
+                             project.status.name() == 'CANCELLED'     ? '❌ Annulé'           : project.status.name()}">—</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <h3 style="font-size:14px;font-weight:700;margin-bottom:14px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">👤 Client</h3>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+          <div class="avatar-sm" style="width:40px;height:40px;font-size:14px;"
+               th:text="${#strings.substring(project.client.fullName, 0, 1).toUpperCase()}">C</div>
+          <div>
+            <div style="font-weight:700;font-size:14px;" th:text="${project.client.fullName}">Nom</div>
+            <div style="font-size:12px;color:var(--text-muted);" th:text="${project.client.email}">Email</div>
+          </div>
+        </div>
+        <div style="font-size:13px;color:var(--text-muted);">
+          📞 <span th:text="${project.client.phone}">Téléphone</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div th:if="${project.status.name() == 'PLAN_SENT'}"
+         style="margin-bottom:20px;">
+      <a th:href="@{/architect/projects/{id}/plan(id=${project.id})}"
+         class="btn btn-ghost">📋 Voir le plan envoyé →</a>
+    </div>
+
+    <div th:if="${project.status.name() == 'PLAN_APPROVED'}"
+         style="margin-bottom:20px;display:flex;gap:10px;flex-wrap:wrap;">
+      <form th:action="@{/architect/projects/{id}/invoice/generate(id=${project.id})}"
+            method="post">
+        <button class="btn btn-primary">
+          🧾 Générer et envoyer la facture →
+        </button>
+      </form>
+      <a th:href="@{/architect/projects/{id}/plan(id=${project.id})}"
+         class="btn btn-ghost">📋 Voir le plan →</a>
+    </div>
+    <a th:href="@{/messages/start(userId=${project.client.id},projectId=${project.id})}"
+       class="btn btn-ghost btn-sm">💬 Contacter le client</a>
+
+    <div th:if="${project.status.name() == 'INVOICE_SENT' or project.status.name() == 'ORDERED' or project.status.name() == 'COMPLETED'}"
+         style="margin-bottom:20px;display:flex;gap:10px;flex-wrap:wrap;">
+      <a th:href="@{/architect/projects/{id}/invoice(id=${project.id})}"
+         class="btn btn-ghost">🧾 Voir la facture</a>
+      <a th:if="${project.status.name() == 'ORDERED' or project.status.name() == 'COMPLETED'}"
+         th:href="@{/architect/projects/{id}/tracking(id=${project.id})}"
+         class="btn btn-ghost">📊 Suivi détaillé du plan</a>
+    </div>
+
+    <div th:if="${project.status.name() == 'ORDERED'}" style="margin-top:16px;">
+      <form th:action="@{/architect/projects/{id}/complete(id=${project.id})}"
+            method="post">
+        <button class="btn btn-primary"
+                onclick="return confirm('Clôturer définitivement ce projet ?')">
+          🏆 Clôturer le projet
+        </button>
+      </form>
+    </div>
+
+    <!-- Description -->
+    <div th:if="${project.description}" class="form-card" style="margin-bottom:20px;">
+      <h3 style="font-size:14px;font-weight:700;margin-bottom:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">📝 Description du client</h3>
+      <p style="font-size:14px;line-height:1.7;" th:text="${project.description}">Description</p>
+    </div>
+
+    <a th:href="@{/architect/projects}" class="btn btn-ghost">← Retour aux projets</a>
+
+  </div>
+</main>
+
+</body>
+</html>

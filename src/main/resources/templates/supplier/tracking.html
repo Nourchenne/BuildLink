@@ -1,0 +1,144 @@
+﻿<!DOCTYPE html>
+<html lang="fr"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Tracking — BuildLink</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <link rel="stylesheet" th:href="@{/css/accessibility.css}"/>
+</head>
+<body>
+
+<nav class="top-nav">
+    <a th:href="@{/}" class="brand">🏗️ BuildLink</a>
+    <div class="nav-right">
+        <div class="notif-wrap">
+      <a th:href="@{/notifications}" class="notif-btn" title="Notifications">🔔
+        <span class="notif-badge" th:if="${unreadNotifications != null and unreadNotifications > 0}" th:text="${unreadNotifications}"></span>
+      </a>
+    </div>
+    <div class="user-chip">
+            <div class="avatar-sm" th:text="${currentUser != null ? #strings.substring(currentUser.fullName,0,1).toUpperCase() : 'U'}">F</div>
+            <span class="user-name-text" th:text="${currentUser != null ? currentUser.fullName : ''}"  ></span>
+        </div>
+        <form th:action="@{/auth/logout}" method="post" style="display:inline">
+            <button type="submit" class="logout-link">Déconnexion</button>
+        </form>
+    </div>
+</nav>
+
+<aside class="sidebar">
+  <div class="sidebar-user-block">
+    <div class="avatar-sm" th:text="${currentUser != null ? #strings.substring(currentUser.fullName,0,1).toUpperCase() : 'U'}">F</div>
+    <div class="sidebar-user-meta">
+      <div class="sidebar-user-name" th:text="${currentUser != null ? currentUser.fullName : ''}"></div>
+      <div class="sidebar-user-role">Fournisseur</div>
+    </div>
+  </div>
+  <div class="sidebar-section-label">Navigation</div>
+  <a th:href="@{/supplier/dashboard}" class="sidebar-link"><span class="sl-icon">🏭</span> Dashboard</a>
+  <a th:href="@{/supplier/catalog}" class="sidebar-link"><span class="sl-icon">📦</span> Mon Catalogue</a>
+  <a th:href="@{/supplier/marketplace}" class="sidebar-link"><span class="sl-icon">🏪</span> Marketplace</a>
+  <a th:href="@{/supplier/orders}" class="sidebar-link"><span class="sl-icon">🚚</span> Mes Commandes</a>
+  <a th:href="@{/messages}" class="sidebar-link"><span class="sl-icon">💬</span> Messages</a>
+  <a th:href="@{/notifications}" class="sidebar-link"><span class="sl-icon">🔔</span> Notifications</a>
+  <a th:href="@{/supplier/tracking}" class="sidebar-link active"><span class="sl-icon">📊</span> Suivi des livraisons</a>
+  <div style="flex:1"></div>
+  <div class="sidebar-divider"></div>
+  <form th:action="@{/auth/logout}" method="post" style="padding:0 8px">
+    <button type="submit" class="sidebar-link sidebar-logout"><span class="sl-icon">🚪</span> Déconnexion</button>
+  </form>
+</aside>
+
+<main class="main-content">
+    <div class="page-shell-wide">
+
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+            <div>
+                <h1 style="font-family:'Playfair Display',serif;">📊 Tableau de suivi</h1>
+                <p style="color:var(--text-muted);font-size:14px;margin-top:4px;">Vos commandes, offres et statuts en temps réel.</p>
+            </div>
+            <div th:if="${totalActions > 0}"
+                 style="background:#FDECEA;border:1px solid rgba(192,57,43,0.25);border-radius:12px;padding:10px 18px;font-size:13px;font-weight:700;color:#C0392B;">
+                ⚠️ <span th:text="${totalActions}">0</span> action(s) requise(s)
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;">
+            <div class="stat-card"><div class="stat-icon">📨</div><div class="stat-num" th:text="${pendingOffers.size()}">0</div><div class="stat-label">Offres en attente</div></div>
+            <div class="stat-card"><div class="stat-icon">📦</div><div class="stat-num" th:text="${toConfirm.size()}">0</div><div class="stat-label">À confirmer</div></div>
+            <div class="stat-card"><div class="stat-icon">🚛</div><div class="stat-num" th:text="${shipped.size()}">0</div><div class="stat-label">Expédiées</div></div>
+            <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-num" th:text="${delivered.size()}">0</div><div class="stat-label">Livrées</div></div>
+        </div>
+
+        <!-- Actions urgentes -->
+        <div th:if="${totalActions > 0}">
+            <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:12px;">
+                🔴 Actions urgentes
+            </div>
+
+            <div th:each="order : ${toConfirm}"
+                 style="background:linear-gradient(135deg,#fef9ed,#fdf3d0);border:1px solid rgba(146,100,28,0.25);border-radius:14px;padding:16px 20px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
+                <div>
+                    <div style="font-weight:800;font-size:14px;color:#92641c;"
+                         th:text="${order.materialItem.name}">Matériau</div>
+                    <div style="font-size:13px;color:#92641c;opacity:0.8;margin-top:3px;">
+                        📦 <span th:text="${order.quantity}">0</span>
+                        <span th:text="${order.materialItem.unit}">u</span> —
+                        Projet : <span th:text="${order.project.title}">Projet</span>
+                    </div>
+                </div>
+                <form th:action="@{/supplier/orders/{id}/status(id=${order.id})}" method="post">
+                    <input type="hidden" name="status" value="CONFIRMED"/>
+                    <button class="btn btn-sm" style="background:#92641c;color:white;border:none;">✅ Confirmer</button>
+                </form>
+            </div>
+
+            <div th:each="order : ${toPrepare}"
+                 style="background:#EBF4FF;border:1px solid rgba(37,99,235,0.2);border-radius:14px;padding:16px 20px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
+                <div>
+                    <div style="font-weight:800;font-size:14px;color:#2563EB;"
+                         th:text="${order.materialItem.name}">Matériau</div>
+                    <div style="font-size:13px;color:#2563EB;opacity:0.8;margin-top:3px;">
+                        ✅ Confirmé — Projet : <span th:text="${order.project.title}">Projet</span>
+                    </div>
+                </div>
+                <form th:action="@{/supplier/orders/{id}/status(id=${order.id})}" method="post">
+                    <input type="hidden" name="status" value="PREPARING"/>
+                    <button class="btn btn-sm" style="background:#2563EB;color:white;border:none;">🔧 Mettre en préparation</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Offres acceptées -->
+        <div th:if="${!acceptedOffers.isEmpty()}">
+            <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:12px;margin-top:20px;">
+                🎉 Offres acceptées
+            </div>
+            <div th:each="offer : ${acceptedOffers}" class="post-card" style="margin-bottom:8px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                    <div>
+                        <div style="font-weight:700;" th:text="${offer.request.title}">Demande</div>
+                        <div style="font-size:12px;color:var(--text-muted);margin-top:3px;">
+                            💰 <span th:text="${#numbers.formatDecimal(offer.unitPrice,1,2)}">0</span> DT/u ×
+                            <span th:text="${offer.quantity}">0</span>
+                            <span th:text="${offer.unit}">u</span>
+                        </div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <span class="badge badge-success">✅ Acceptée</span>
+                        <a th:href="@{/messages/start(userId=${offer.request.architect.id})}"
+                           class="btn btn-primary btn-sm">💬 Contacter l'architecte</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</main>
+</body>
+</html>

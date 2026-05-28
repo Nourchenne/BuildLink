@@ -1,0 +1,145 @@
+﻿<!DOCTYPE html>
+<html lang="fr"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Nouvelle Demande — BuildLink</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <link rel="stylesheet" th:href="@{/css/accessibility.css}"/>
+</head>
+<body>
+
+<nav class="top-nav">
+    <a th:href="@{/}" class="brand">🏗️ BuildLink</a>
+    <div class="nav-right">
+        <div class="notif-wrap">
+      <a th:href="@{/notifications}" class="notif-btn" title="Notifications">🔔
+        <span class="notif-badge" th:if="${unreadNotifications != null and unreadNotifications > 0}" th:text="${unreadNotifications}"></span>
+      </a>
+    </div>
+    <div class="user-chip"><div class="avatar-sm" th:text="${currentUser != null ? #strings.substring(currentUser.fullName,0,1).toUpperCase() : 'U'}">A</div>
+            <span class="user-name-text" th:text="${currentUser != null ? currentUser.fullName : ''}"  ></span></div>
+        <form th:action="@{/auth/logout}" method="post" style="display:inline">
+            <button type="submit" class="logout-link">Déconnexion</button>
+        </form>
+    </div>
+</nav>
+
+<aside class="sidebar">
+  <div class="sidebar-user-block">
+    <div class="avatar-sm" th:text="${currentUser != null ? #strings.substring(currentUser.fullName,0,1).toUpperCase() : 'U'}">A</div>
+    <div class="sidebar-user-meta">
+      <div class="sidebar-user-name" th:text="${currentUser != null ? currentUser.fullName : ''}"></div>
+      <div class="sidebar-user-role">Architecte</div>
+    </div>
+  </div>
+  <div class="sidebar-section-label">Navigation</div>
+  <a th:href="@{/architect/dashboard}" class="sidebar-link"><span class="sl-icon">📐</span> Dashboard</a>
+  <a th:href="@{/architect/projects}" class="sidebar-link"><span class="sl-icon">📋</span> Mes Projets</a>
+  <a th:href="@{/architect/catalog}" class="sidebar-link"><span class="sl-icon">🏪</span> Catalogue fournisseurs</a>
+  <a th:href="@{/architect/requests}" class="sidebar-link active"><span class="sl-icon">📢</span> Mes Demandes</a>
+  <a th:href="@{/messages}" class="sidebar-link"><span class="sl-icon">💬</span> Messages</a>
+  <a th:href="@{/notifications}" class="sidebar-link"><span class="sl-icon">🔔</span> Notifications</a>
+  <a th:href="@{/architect/tracking}" class="sidebar-link"><span class="sl-icon">📊</span> Suivi des commandes</a>
+  <div style="flex:1"></div>
+  <div class="sidebar-divider"></div>
+  <form th:action="@{/auth/logout}" method="post" style="padding:0 8px">
+    <button type="submit" class="sidebar-link sidebar-logout"><span class="sl-icon">🚪</span> Déconnexion</button>
+  </form>
+</aside>
+
+<main class="main-content">
+    <div class="page-shell-medium">
+
+        <div class="breadcrumb" style="margin-bottom:20px;">
+            <a th:href="@{/architect/requests}">Mes demandes</a>
+            <span>›</span>
+            <span style="color:var(--text)">Nouvelle demande</span>
+        </div>
+
+        <div class="form-card" style="max-width:100%;">
+            <h2 style="font-family:'Playfair Display',serif;margin-bottom:6px;">📢 Publier une demande</h2>
+            <p style="color:var(--text-muted);font-size:14px;margin-bottom:28px;">
+                Les fournisseurs verront votre demande et pourront envoyer des offres.
+            </p>
+
+            <form th:action="@{/architect/requests/new}"
+                  th:object="${requestDTO}" method="post">
+
+                <div class="form-group">
+                    <label>Titre de la demande <span style="color:var(--danger)">*</span></label>
+                    <input type="text" th:field="*{title}"
+                           placeholder="Ex: Besoin de 500 sacs de ciment Portland" required/>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                    <div class="form-group">
+                        <label>Type de matériau <span style="color:var(--danger)">*</span></label>
+                        <select th:field="*{materialType}" required>
+                            <option value="">— Choisir —</option>
+                            <option value="Béton & Ciment">Béton & Ciment</option>
+                            <option value="Acier & Métal">Acier & Métal</option>
+                            <option value="Bois">Bois</option>
+                            <option value="Carrelage">Carrelage</option>
+                            <option value="Plomberie">Plomberie</option>
+                            <option value="Électricité">Électricité</option>
+                            <option value="Isolation">Isolation</option>
+                            <option value="Autre">Autre</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Projet associé</label>
+                        <select th:field="*{projectId}">
+                            <option value="">— Aucun —</option>
+                            <option th:each="p : ${projects}"
+                                    th:value="${p.id}"
+                                    th:text="${p.title}">Projet</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                    <div class="form-group">
+                        <label>Quantité <span style="color:var(--danger)">*</span></label>
+                        <input type="number" th:field="*{quantity}"
+                               step="0.01" min="0" placeholder="500" required/>
+                    </div>
+                    <div class="form-group">
+                        <label>Unité <span style="color:var(--danger)">*</span></label>
+                        <select th:field="*{unit}" required>
+                            <option value="">—</option>
+                            <option value="kg">kg</option>
+                            <option value="tonne">tonne</option>
+                            <option value="m²">m²</option>
+                            <option value="m³">m³</option>
+                            <option value="sac">sac</option>
+                            <option value="unité">unité</option>
+                            <option value="litre">litre</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Localisation</label>
+                    <input type="text" th:field="*{location}" placeholder="Ex: Tunis, Sfax..."/>
+                </div>
+
+                <div class="form-group">
+                    <label>Description & spécifications</label>
+                    <textarea th:field="*{description}" rows="4"
+                              placeholder="Décrivez vos besoins précisément : qualité, normes, délai..."></textarea>
+                </div>
+
+                <div style="display:flex;gap:12px;margin-top:8px;">
+                    <button type="submit" class="btn btn-primary">Publier la demande →</button>
+                    <a th:href="@{/architect/requests}" class="btn btn-ghost">Annuler</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+</body>
+</html>

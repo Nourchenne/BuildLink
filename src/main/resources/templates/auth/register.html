@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Inscription — BuildLink</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+  <link rel="stylesheet" th:href="@{/css/landing.css}"/>
+  <link rel="stylesheet" th:href="@{/css/accessibility.css}"/>
+</head>
+<body>
+
+<nav class="land-nav scrolled">
+  <a th:href="@{/}" class="brand">🏗️ BuildLink</a>
+  <div class="land-links">
+    <a th:href="@{/}">Accueil</a>
+    <a th:href="@{/auth/login}">Connexion</a>
+    <a th:href="@{/auth/register}" class="cta">Commencer</a>
+  </div>
+</nav>
+
+<div class="auth-split">
+
+  <div class="auth-left-panel">
+    <div class="auth-img-fill" style="background-image:url('/images/img4.jpeg')"></div>
+    <div class="auth-img-overlay"></div>
+    <div class="auth-left-content">
+      <div class="alp-brand">🏗 BuildLink</div>
+      <div class="alp-quote">Rejoignez la<br>marketplace de la<br>construction.</div>
+      <p class="alp-sub">Client, architecte ou fournisseur — BuildLink vous connecte aux bons partenaires pour réaliser vos projets plus efficacement.</p>
+      <div class="alp-trust">
+        <div class="alp-trust-item"><span>300+</span>Architectes</div>
+        <div class="alp-trust-item"><span>1 200+</span>Projets clôturés</div>
+      </div>
+      <div class="alp-footer">© 2026 BuildLink</div>
+    </div>
+  </div>
+
+  <div class="auth-right-panel">
+    <div class="auth-card" style="max-width:460px;">
+      <div class="auth-logo">Créer un compte</div>
+      <p class="auth-sub">Commencez avec BuildLink dès aujourd'hui</p>
+
+      <div th:if="${error}"
+           style="margin-bottom:18px;padding:12px 16px;background:#FDECEA;border:1px solid rgba(192,57,43,0.25);border-radius:10px;color:#C0392B;font-size:13px;font-weight:600;"
+           th:text="${error}"></div>
+
+      <form th:action="@{/auth/register}" th:object="${registerDTO}" method="post">
+
+        <div class="form-group">
+          <label>Nom complet <span style="color:var(--danger)">*</span></label>
+          <input type="text" th:field="*{fullName}" placeholder="Jean Dupont" required/>
+          <span th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"
+                style="color:var(--danger);font-size:12px;margin-top:4px;display:block;"></span>
+        </div>
+
+        <div class="form-group">
+          <label>Email <span style="color:var(--danger)">*</span></label>
+          <input type="email" th:field="*{email}" placeholder="vous@exemple.com" required/>
+          <span th:if="${#fields.hasErrors('email')}" th:errors="*{email}"
+                style="color:var(--danger);font-size:12px;margin-top:4px;display:block;"></span>
+        </div>
+
+        <div class="form-group">
+          <label>Mot de passe <span style="color:var(--danger)">*</span></label>
+          <input type="password" th:field="*{password}" placeholder="Minimum 6 caractères" required/>
+          <span th:if="${#fields.hasErrors('password')}" th:errors="*{password}"
+                style="color:var(--danger);font-size:12px;margin-top:4px;display:block;"></span>
+        </div>
+
+        <div class="form-group">
+          <label>Confirmer le mot de passe <span style="color:var(--danger)">*</span></label>
+          <input type="password" th:field="*{confirmPassword}" placeholder="Répétez votre mot de passe" required/>
+          <span th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}"
+                style="color:var(--danger);font-size:12px;margin-top:4px;display:block;"></span>
+        </div>
+
+        <div class="form-group">
+          <label>Téléphone</label>
+          <input type="text" th:field="*{phone}" placeholder="+216 XX XXX XXX"/>
+          <span th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"
+                style="color:var(--danger);font-size:12px;margin-top:4px;display:block;"></span>
+        </div>
+
+        <div class="form-group">
+          <label>Rôle <span style="color:var(--danger)">*</span></label>
+          <select th:field="*{role}" required>
+            <option value="">— Choisir votre rôle —</option>
+            <option th:each="role : ${roles}"
+                    th:value="${role}"
+                    th:text="${role.name() == 'CLIENT' ? '🏠 Client — Je veux réaliser un projet' :
+                               role.name() == 'ARCHITECT' ? '📐 Architecte — Je conçois des projets' :
+                               '🧱 Fournisseur — Je vends des matériaux'}">
+            </option>
+          </select>
+          <span th:if="${#fields.hasErrors('role')}" th:errors="*{role}"
+                style="color:var(--danger);font-size:12px;margin-top:4px;display:block;"></span>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary btn-block">
+            Créer mon compte →
+          </button>
+        </div>
+      </form>
+
+      <p class="form-hint">
+        Déjà un compte ? <a th:href="@{/auth/login}">Se connecter →</a>
+      </p>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

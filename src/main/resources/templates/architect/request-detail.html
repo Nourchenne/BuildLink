@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="fr"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Détail Demande — BuildLink</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <link rel="stylesheet" th:href="@{/css/accessibility.css}"/>
+</head>
+<body>
+
+<nav class="top-nav">
+    <a th:href="@{/}" class="brand">🏗️ BuildLink</a>
+    <div class="nav-right">
+        <div class="notif-wrap">
+      <a th:href="@{/notifications}" class="notif-btn" title="Notifications">🔔
+        <span class="notif-badge" th:if="${unreadNotifications != null and unreadNotifications > 0}" th:text="${unreadNotifications}"></span>
+      </a>
+    </div>
+    <div class="user-chip"><div class="avatar-sm" th:text="${currentUser != null ? #strings.substring(currentUser.fullName,0,1).toUpperCase() : 'U'}">A</div>
+            <span class="user-name-text" th:text="${currentUser != null ? currentUser.fullName : ''}"  ></span></div>
+        <form th:action="@{/auth/logout}" method="post" style="display:inline">
+            <button type="submit" class="logout-link">Déconnexion</button>
+        </form>
+    </div>
+</nav>
+
+<aside class="sidebar">
+  <div class="sidebar-user-block">
+    <div class="avatar-sm" th:text="${currentUser != null ? #strings.substring(currentUser.fullName,0,1).toUpperCase() : 'U'}">A</div>
+    <div class="sidebar-user-meta">
+      <div class="sidebar-user-name" th:text="${currentUser != null ? currentUser.fullName : ''}"></div>
+      <div class="sidebar-user-role">Architecte</div>
+    </div>
+  </div>
+  <div class="sidebar-section-label">Navigation</div>
+  <a th:href="@{/architect/dashboard}" class="sidebar-link"><span class="sl-icon">📐</span> Dashboard</a>
+  <a th:href="@{/architect/projects}" class="sidebar-link"><span class="sl-icon">📋</span> Mes Projets</a>
+  <a th:href="@{/architect/catalog}" class="sidebar-link"><span class="sl-icon">🏪</span> Catalogue fournisseurs</a>
+  <a th:href="@{/architect/requests}" class="sidebar-link active"><span class="sl-icon">📢</span> Mes Demandes</a>
+  <a th:href="@{/messages}" class="sidebar-link"><span class="sl-icon">💬</span> Messages</a>
+  <a th:href="@{/notifications}" class="sidebar-link"><span class="sl-icon">🔔</span> Notifications</a>
+  <a th:href="@{/architect/tracking}" class="sidebar-link"><span class="sl-icon">📊</span> Suivi des commandes</a>
+  <div style="flex:1"></div>
+  <div class="sidebar-divider"></div>
+  <form th:action="@{/auth/logout}" method="post" style="padding:0 8px">
+    <button type="submit" class="sidebar-link sidebar-logout"><span class="sl-icon">🚪</span> Déconnexion</button>
+  </form>
+</aside>
+
+<main class="main-content">
+    <div class="page-shell-wide">
+
+        <div class="breadcrumb" style="margin-bottom:20px;">
+            <a th:href="@{/architect/requests}">Mes demandes</a>
+            <span>›</span>
+            <span style="color:var(--text)" th:text="${request.title}">Demande</span>
+        </div>
+
+        <div th:if="${success}"
+             class="alert alert-success"
+             th:text="${success}"></div>
+
+        <!-- Header -->
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:24px;">
+            <div>
+                <h1 style="font-family:'Playfair Display',serif;font-size:26px;"
+                    th:text="${request.title}">Titre</h1>
+                <p style="color:var(--text-muted);font-size:14px;margin-top:4px;">
+                    Publiée le <span th:text="${#temporals.format(request.createdAt,'dd MMMM yyyy')}">date</span>
+                </p>
+            </div>
+            <span class="badge"
+                  th:classappend="${request.status.name() == 'OPEN'} ? 'badge-success' : 'badge-neutral'"
+                  th:text="${request.status.name() == 'OPEN'} ? '🟢 Ouverte' : '🔒 Fermée'"
+                  style="font-size:13px;padding:8px 16px;">
+      </span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start;">
+
+            <!-- OFFRES -->
+            <div>
+                <h2 style="font-family:'Playfair Display',serif;font-size:20px;margin-bottom:16px;">
+                    📨 Offres reçues
+                    <span style="font-size:14px;color:var(--text-muted);font-family:Inter,sans-serif;font-weight:400;"
+                          th:text="'(' + ${offers.size()} + ')'"></span>
+                </h2>
+
+                <div th:if="${offers.isEmpty()}" class="empty-state" style="text-align:center;">
+                    <div class="empty-icon">📭</div>
+                    <p>Aucune offre reçue pour l'instant. Les fournisseurs sont notifiés.</p>
+                </div>
+
+                <div th:each="offer : ${offers}" class="offer-item" style="margin-bottom:14px;">
+                    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;">
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <div class="avatar-sm" style="width:40px;height:40px;font-size:14px;flex-shrink:0;"
+                                 th:text="${#strings.substring(offer.supplier.fullName, 0, 1).toUpperCase()}">S</div>
+                            <div>
+                                <div style="font-weight:700;font-size:14px;"
+                                     th:text="${offer.supplier.fullName}">Fournisseur</div>
+                                <div style="font-size:12px;color:var(--text-muted);"
+                                     th:text="${#temporals.format(offer.createdAt,'dd/MM/yyyy')}">date</div>
+                            </div>
+                        </div>
+                        <span class="badge"
+                              th:classappend="${offer.status.name() == 'PENDING' ? 'badge-amber' : (offer.status.name() == 'ACCEPTED' ? 'badge-success' : 'badge-danger')}"
+                              th:text="${offer.status.name() == 'PENDING' ? '⏳ En attente' : (offer.status.name() == 'ACCEPTED' ? '✅ Acceptée' : '❌ Refusée')}">
+            </span>
+                    </div>
+
+                    <!-- Détails offre -->
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px;">
+                        <div style="background:var(--bg);border-radius:8px;padding:10px;text-align:center;">
+                            <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">PRIX UNITAIRE</div>
+                            <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:900;color:var(--primary);"
+                                 th:text="${#numbers.formatDecimal(offer.unitPrice,1,2)} + ' DT'">0</div>
+                        </div>
+                        <div style="background:var(--bg);border-radius:8px;padding:10px;text-align:center;">
+                            <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">QUANTITÉ</div>
+                            <div style="font-size:18px;font-weight:800;color:var(--text);"
+                                 th:text="${offer.quantity} + ' ' + ${offer.unit}">0</div>
+                        </div>
+                        <div style="background:var(--primary-light);border-radius:8px;padding:10px;text-align:center;">
+                            <div style="font-size:11px;color:var(--primary);margin-bottom:4px;">TOTAL</div>
+                            <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:900;color:var(--primary);"
+                                 th:text="${#numbers.formatDecimal(offer.unitPrice * offer.quantity,1,2)} + ' DT'">0</div>
+                        </div>
+                    </div>
+
+                    <div th:if="${offer.deliveryTime}"
+                         style="font-size:13px;color:var(--text-muted);margin-bottom:8px;">
+                        🚚 Délai de livraison : <b th:text="${offer.deliveryTime}">délai</b>
+                    </div>
+
+                    <div th:if="${offer.message}"
+                         style="background:var(--bg);border-left:3px solid var(--border);border-radius:6px;padding:10px 14px;font-size:13px;color:var(--text-muted);margin-bottom:12px;font-style:italic;"
+                         th:text="${offer.message}">Message</div>
+
+                    <!-- Accepter (seulement si demande ouverte et offre en attente) -->
+                    <div th:if="${request.status.name() == 'OPEN' and offer.status.name() == 'PENDING'}">
+                        <form th:action="@{/architect/offers/{offerId}/accept(offerId=${offer.id})}"
+                              method="post">
+                            <input type="hidden" name="requestId" th:value="${request.id}"/>
+                            <button class="btn btn-primary btn-sm"
+                                    onclick="return confirm('Accepter cette offre ? Les autres offres seront refusées.')">
+                                ✅ Accepter cette offre
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INFO DEMANDE -->
+            <div>
+                <div class="form-card" style="max-width:100%;padding:24px;">
+                    <h3 style="font-size:14px;font-weight:700;margin-bottom:16px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">
+                        📋 Détails de la demande
+                    </h3>
+                    <div style="display:flex;flex-direction:column;gap:12px;font-size:14px;">
+                        <div style="display:flex;justify-content:space-between;">
+                            <span style="color:var(--text-muted);">Type</span>
+                            <span style="font-weight:600;" th:text="${request.materialType}">—</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;">
+                            <span style="color:var(--text-muted);">Quantité</span>
+                            <span style="font-weight:600;">
+                <span th:text="${request.quantity}">0</span>
+                <span th:text="${request.unit}">u</span>
+              </span>
+                        </div>
+                        <div th:if="${request.location}"
+                             style="display:flex;justify-content:space-between;">
+                            <span style="color:var(--text-muted);">Localisation</span>
+                            <span style="font-weight:600;" th:text="${request.location}">—</span>
+                        </div>
+                        <div th:if="${request.project != null}"
+                             style="display:flex;justify-content:space-between;">
+                            <span style="color:var(--text-muted);">Projet</span>
+                            <span style="font-weight:600;" th:text="${request.project.title}">—</span>
+                        </div>
+                    </div>
+                    <div th:if="${request.description}"
+                         style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border-light);font-size:13px;color:var(--text-muted);line-height:1.6;"
+                         th:text="${request.description}"></div>
+                </div>
+                <a th:href="@{/architect/requests}" class="btn btn-ghost"
+                   style="margin-top:12px;">← Retour</a>
+            </div>
+
+        </div>
+    </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title th:text="${errorTitle} + ' — BuildLink'">Erreur — BuildLink</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+  <style>
+    .error-page {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
+      padding: 2rem;
+      background: #f8f9fa;
+    }
+    .error-code {
+      font-size: 6rem;
+      font-weight: 800;
+      color: #C0392B;
+      line-height: 1;
+    }
+    .error-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #2C3E50;
+      margin: 1rem 0 0.5rem;
+    }
+    .error-message {
+      color: #7F8C8D;
+      font-size: 1rem;
+      max-width: 500px;
+      margin-bottom: 2rem;
+    }
+    .btn-back {
+      background: #2C3E50;
+      color: #fff;
+      padding: 0.75rem 2rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      display: inline-block;
+    }
+    .btn-back:hover { background: #34495E; }
+  </style>
+</head>
+<body>
+<div class="error-page">
+  <div class="error-code" th:text="${statusCode ?: 500}">500</div>
+  <div class="error-title" th:text="${errorTitle ?: 'Erreur'}">Erreur</div>
+  <p class="error-message" th:text="${errorMessage ?: 'Une erreur inattendue est survenue.'}">
+    Une erreur inattendue est survenue.
+  </p>
+  <a href="/" class="btn-back">🏠 Retour à l'accueil</a>
+</div>
+</body>
+</html>
+

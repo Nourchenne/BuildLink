@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BuildLink — Plateforme de Construction</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+  <link rel="stylesheet" th:href="@{/css/accessibility.css}"/>
+  <link rel="stylesheet" th:href="@{/css/landing.css}"/>
+</head>
+<body class="landing-body">
+
+<!-- ═══ NAVBAR ═══ -->
+<nav class="land-nav" id="landNav">
+  <a th:href="@{/}" class="brand">🏗️ BuildLink</a>
+  <div class="land-links">
+    <a href="#how">Comment ça marche</a>
+    <a href="#roles">Pour vous</a>
+    <a th:href="@{/auth/login}">Connexion</a>
+    <a th:href="@{/auth/register}" class="cta">Commencer →</a>
+  </div>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="land-hero">
+  <div class="hero-img-bg" style="background-image:url('/images/img1.jpeg')"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">Plateforme de gestion de construction</div>
+    <h1 class="hero-title">
+      Trouvez les bons<br>
+      <em>matériaux.</em><br>
+      Concluez le deal.
+    </h1>
+    <p class="hero-sub">
+      BuildLink connecte clients, architectes et fournisseurs dans un workflow unique —
+      de la demande initiale jusqu'à la livraison, tout est suivi en temps réel.
+    </p>
+    <div class="hero-actions">
+      <a th:href="@{/auth/register}" class="btn btn-hero-primary">Commencer gratuitement →</a>
+      <a th:href="@{/auth/login}" class="btn btn-hero-ghost">Se connecter</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ STATS STRIP ═══ -->
+<div class="stats-strip">
+  <div class="ss-item">
+    <div class="ss-num">500+</div>
+    <div class="ss-lbl">Demandes postées</div>
+  </div>
+  <div class="ss-item">
+    <div class="ss-num">300+</div>
+    <div class="ss-lbl">Architectes</div>
+  </div>
+  <div class="ss-item">
+    <div class="ss-num">200+</div>
+    <div class="ss-lbl">Fournisseurs actifs</div>
+  </div>
+  <div class="ss-item">
+    <div class="ss-num">1 200+</div>
+    <div class="ss-lbl">Projets clôturés</div>
+  </div>
+</div>
+
+<!-- ═══ HOW IT WORKS ═══ -->
+<section class="how-section" id="how">
+  <div class="section-eyebrow">Processus simple</div>
+  <h2 class="section-title">Comment fonctionne BuildLink</h2>
+  <p class="section-sub">Du besoin en matériaux au projet clôturé, en quelques étapes simples.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-icon">✏️</div>
+      <h4>Créer une demande</h4>
+      <p>Le client décrit son projet et choisit un architecte disponible sur la plateforme.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-icon">📐</div>
+      <h4>Plan & Validation</h4>
+      <p>L'architecte prépare le plan de matériaux et le soumet au client pour validation.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-icon">📦</div>
+      <h4>Sourcing automatique</h4>
+      <p>Le système recherche les matériaux chez les fournisseurs et génère une facture.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-icon">🚚</div>
+      <h4>Livraison & Clôture</h4>
+      <p>Les commandes sont suivies en temps réel jusqu'à livraison et clôture du projet.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FOR CLIENTS ═══ -->
+<section class="editorial-section" id="roles">
+  <div class="editorial-img" style="background-image:url('/images/img2.jpeg')"></div>
+  <div class="editorial-text">
+    <div class="et-label">Pour les Clients</div>
+    <h2>Votre projet entre de bonnes mains.</h2>
+    <p>Trouvez l'architecte idéal, suivez chaque étape de votre projet et approuvez les décisions importantes depuis votre espace personnel.</p>
+    <ul class="et-list">
+      <li>Recherchez et contactez des architectes qualifiés</li>
+      <li>Suivez le statut de votre projet en temps réel</li>
+      <li>Approuvez les plans et les factures en un clic</li>
+      <li>Laissez un avis à la fin du projet</li>
+    </ul>
+    <a th:href="@{/auth/register}" class="btn btn-primary" style="margin-top:28px;">
+      Rejoindre en tant que Client →
+    </a>
+  </div>
+</section>
+
+<!-- ═══ FOR ARCHITECTS ═══ -->
+<section class="editorial-section">
+  <div class="editorial-text editorial-dark">
+    <div class="et-label">Pour les Architectes</div>
+    <h2>Gérez vos projets efficacement.</h2>
+    <p>Recevez les demandes clients, préparez vos plans, sourcez les matériaux automatiquement et communiquez avec les fournisseurs depuis un seul tableau de bord.</p>
+    <ul class="et-list">
+      <li>Recevez et acceptez les demandes clients</li>
+      <li>Créez et envoyez des plans de matériaux</li>
+      <li>Comparez les offres des fournisseurs</li>
+      <li>Suivez toutes vos commandes en cours</li>
+    </ul>
+    <a th:href="@{/auth/register}" class="btn btn-hero-ghost" style="margin-top:28px;border-color:rgba(255,255,255,0.3);color:white;">
+      Rejoindre en tant qu'Architecte →
+    </a>
+  </div>
+  <div class="editorial-img" style="background-image:url('/images/img3.jpeg')"></div>
+</section>
+
+<!-- ═══ FOR SUPPLIERS ═══ -->
+<section class="editorial-section">
+  <div class="editorial-img" style="background-image:url('/images/img4.jpeg')"></div>
+  <div class="editorial-text">
+    <div class="et-label">Pour les Fournisseurs</div>
+    <h2>Touchez les architectes qui achètent.</h2>
+    <p>Publiez votre catalogue, répondez aux demandes des architectes et remportez plus de contrats grâce à un système d'offres privées et transparentes.</p>
+    <ul class="et-list">
+      <li>Publiez votre catalogue de matériaux</li>
+      <li>Consultez les demandes ouvertes des architectes</li>
+      <li>Soumettez des offres compétitives et privées</li>
+      <li>Gérez vos bons de commande et livraisons</li>
+    </ul>
+    <a th:href="@{/auth/register}" class="btn btn-primary" style="margin-top:28px;">
+      Rejoindre en tant que Fournisseur →
+    </a>
+  </div>
+</section>
+
+<!-- ═══ CTA ═══ -->
+<section class="land-cta">
+  <div class="land-cta-content">
+    <div class="section-eyebrow" style="margin:0 auto 20px;">Rejoignez BuildLink</div>
+    <h2>Prêt à construire plus intelligemment ?</h2>
+    <p>Rejoignez des centaines de clients, architectes et fournisseurs qui gèrent déjà leurs projets sur BuildLink.</p>
+    <div class="hero-actions" style="justify-content:center;margin-top:32px;">
+      <a th:href="@{/auth/register}" class="btn btn-hero-primary">Créer un compte gratuit →</a>
+      <a th:href="@{/auth/login}" class="btn btn-hero-ghost">Se connecter</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer class="land-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <span class="brand" style="color:var(--accent);border:none;padding:0;">🏗️ BuildLink</span>
+      <p>Connecter le secteur de la construction.</p>
+    </div>
+    <div class="footer-links">
+      <a th:href="@{/auth/login}">Connexion</a>
+      <a th:href="@{/auth/register}">Inscription</a>
+      <a href="#how">Comment ça marche</a>
+    </div>
+    <p class="footer-copy">© 2026 BuildLink. Tous droits réservés.</p>
+  </div>
+</footer>
+
+<script>
+  // Navbar scroll effect
+  const nav = document.getElementById('landNav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 60);
+  });
+
+  // Smooth scroll for anchor links
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const el = document.querySelector(a.getAttribute('href'));
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+</script>
+
+</body>
+</html>

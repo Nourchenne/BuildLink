@@ -1,0 +1,77 @@
+﻿/* =========================================================
+   BUILDLINK — ACCESSIBILITY & UX ENHANCEMENTS
+   No conflicts with style.css — only additive rules.
+   ========================================================= */
+
+/* ── Focus Visible ── */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ── Skip to Content ── */
+.skip-link {
+  position: absolute;
+  top: -60px; left: 16px;
+  background: var(--primary); color: white;
+  padding: 10px 18px; border-radius: 6px;
+  font-size: 13px; font-weight: 700;
+  text-decoration: none; z-index: 9999;
+  transition: top 0.2s;
+}
+.skip-link:focus { top: 8px; }
+
+/* ── High Contrast mode support ── */
+@media (prefers-contrast: high) {
+  .sidebar-link { color: rgba(255,255,255,0.85); }
+  .sidebar-link.active { color: white; background: rgba(184,148,90,0.35); }
+  .badge { outline: 1px solid currentColor; }
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}
+
+/* ── Smooth hover for interactive elements ── */
+.btn, .sidebar-link, .post-card, .stat-card,
+.architect-card, .catalog-item, .notif-btn, .user-chip {
+  will-change: transform;
+}
+
+/* ── Better text rendering ── */
+body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+/* ── Form label improvements ── */
+.form-group label { cursor: pointer; }
+.form-group label[for] { cursor: pointer; }
+
+/* ── Button loading state ── */
+.btn[disabled], .btn.loading { opacity: 0.6; cursor: not-allowed; pointer-events: none; }
+
+/* ── Better placeholder contrast ── */
+::placeholder { color: var(--text-light); opacity: 1; }
+
+/* ── Scrollbar global (chrome/edge) ── */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-light); }
+
+/* ── Selection ── */
+::selection { background: var(--primary-light); color: var(--primary-dark); }
+
+/* ── Print ── */
+@media print {
+  .sidebar, .top-nav { display: none !important; }
+  .main-content { margin: 0 !important; }
+}

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Connexion — BuildLink</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+  <link rel="stylesheet" th:href="@{/css/landing.css}"/>
+  <link rel="stylesheet" th:href="@{/css/accessibility.css}"/>
+</head>
+<body>
+
+<nav class="land-nav scrolled">
+  <a th:href="@{/}" class="brand">🏗️ BuildLink</a>
+  <div class="land-links">
+    <a th:href="@{/}">Accueil</a>
+    <a th:href="@{/auth/login}">Connexion</a>
+    <a th:href="@{/auth/register}" class="cta">Commencer</a>
+  </div>
+</nav>
+
+<div class="auth-split">
+
+  <div class="auth-left-panel">
+    <div class="auth-img-fill" style="background-image:url('/images/img1.jpeg')"></div>
+    <div class="auth-img-overlay"></div>
+    <div class="auth-left-content">
+      <div class="alp-brand">🏗 BuildLink</div>
+      <div class="alp-quote">Là où les grands<br>projets de<br>construction naissent.</div>
+      <p class="alp-sub">Connectez clients, architectes et fournisseurs dans une seule plateforme — rapidement, efficacement, en toute clarté.</p>
+      <div class="alp-trust">
+        <div class="alp-trust-item"><span>500+</span>Demandes postées</div>
+        <div class="alp-trust-item"><span>200+</span>Fournisseurs actifs</div>
+      </div>
+      <div class="alp-footer">© 2026 BuildLink</div>
+    </div>
+  </div>
+
+  <div class="auth-right-panel">
+    <div class="auth-card">
+      <div class="auth-logo">Bon retour 👋</div>
+      <p class="auth-sub">Connectez-vous à votre compte BuildLink</p>
+
+      <div th:if="${param.error}"
+           style="margin-bottom:18px;padding:12px 16px;background:#FDECEA;border:1px solid rgba(192,57,43,0.25);border-radius:10px;color:#C0392B;font-size:13px;font-weight:600;">
+        ❌ Email ou mot de passe incorrect.
+      </div>
+      <div th:if="${param.logout}"
+           style="margin-bottom:18px;padding:12px 16px;background:#E4F5EC;border:1px solid rgba(39,174,96,0.25);border-radius:10px;color:#27AE60;font-size:13px;font-weight:600;">
+        ✅ Vous êtes déconnecté avec succès.
+      </div>
+      <div th:if="${param.success}"
+           style="margin-bottom:18px;padding:12px 16px;background:#E4F5EC;border:1px solid rgba(39,174,96,0.25);border-radius:10px;color:#27AE60;font-size:13px;font-weight:600;">
+        🎉 Compte créé ! Connectez-vous maintenant.
+      </div>
+
+      <form th:action="@{/auth/login}" method="post">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" name="email" placeholder="vous@exemple.com" required autocomplete="email"/>
+        </div>
+        <div class="form-group">
+          <label>Mot de passe</label>
+          <input type="password" name="password" placeholder="••••••••" required autocomplete="current-password"/>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary btn-block">Se connecter →</button>
+        </div>
+      </form>
+
+      <p class="form-hint">
+        Pas de compte ? <a th:href="@{/auth/register}">S'inscrire →</a>
+      </p>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

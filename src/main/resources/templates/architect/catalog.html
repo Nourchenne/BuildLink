@@ -1,0 +1,157 @@
+﻿<!DOCTYPE html>
+<html lang="fr"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Catalogue Matériaux — BuildLink</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <link rel="stylesheet" th:href="@{/css/accessibility.css}"/>
+</head>
+<body>
+
+<nav class="top-nav">
+    <a th:href="@{/}" class="brand">🏗️ BuildLink</a>
+    <div class="nav-right">
+        <div class="notif-wrap">
+      <a th:href="@{/notifications}" class="notif-btn" title="Notifications">🔔
+        <span class="notif-badge" th:if="${unreadNotifications != null and unreadNotifications > 0}" th:text="${unreadNotifications}"></span>
+      </a>
+    </div>
+    <div class="user-chip">
+            <div class="avatar-sm" th:text="${currentUser != null ? #strings.substring(currentUser.fullName,0,1).toUpperCase() : 'U'}">A</div>
+            <span class="user-name-text" th:text="${currentUser != null ? currentUser.fullName : ''}"  ></span>
+        </div>
+        <form th:action="@{/auth/logout}" method="post" style="display:inline">
+            <button type="submit" class="logout-link">Déconnexion</button>
+        </form>
+    </div>
+</nav>
+
+<aside class="sidebar">
+  <div class="sidebar-user-block">
+    <div class="avatar-sm" th:text="${currentUser != null ? #strings.substring(currentUser.fullName,0,1).toUpperCase() : 'U'}">A</div>
+    <div class="sidebar-user-meta">
+      <div class="sidebar-user-name" th:text="${currentUser != null ? currentUser.fullName : ''}"></div>
+      <div class="sidebar-user-role">Architecte</div>
+    </div>
+  </div>
+  <div class="sidebar-section-label">Navigation</div>
+  <a th:href="@{/architect/dashboard}" class="sidebar-link"><span class="sl-icon">📐</span> Dashboard</a>
+  <a th:href="@{/architect/projects}" class="sidebar-link"><span class="sl-icon">📋</span> Mes Projets</a>
+  <a th:href="@{/architect/catalog}" class="sidebar-link active"><span class="sl-icon">🏪</span> Catalogue fournisseurs</a>
+  <a th:href="@{/architect/requests}" class="sidebar-link"><span class="sl-icon">📢</span> Mes Demandes</a>
+  <a th:href="@{/messages}" class="sidebar-link"><span class="sl-icon">💬</span> Messages</a>
+  <a th:href="@{/notifications}" class="sidebar-link"><span class="sl-icon">🔔</span> Notifications</a>
+  <a th:href="@{/architect/tracking}" class="sidebar-link"><span class="sl-icon">📊</span> Suivi des commandes</a>
+  <div style="flex:1"></div>
+  <div class="sidebar-divider"></div>
+  <form th:action="@{/auth/logout}" method="post" style="padding:0 8px">
+    <button type="submit" class="sidebar-link sidebar-logout"><span class="sl-icon">🚪</span> Déconnexion</button>
+  </form>
+</aside>
+
+<main class="main-content">
+    <div class="page-shell-wide">
+
+        <div class="page-header"
+             style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+            <div>
+                <h1 style="font-family:'Playfair Display',serif;">🏪 Catalogue Fournisseurs</h1>
+                <p style="color:var(--text-muted);font-size:14px;margin-top:4px;">
+                    Consultez les matériaux disponibles et contactez les fournisseurs.
+                </p>
+            </div>
+            <span style="font-size:13px;color:var(--text-muted);">
+        <b style="color:var(--primary);" th:text="${items.size()}">0</b> article(s)
+      </span>
+        </div>
+
+        <!-- Barre de recherche -->
+        <form th:action="@{/architect/catalog}" method="get" style="margin-bottom:24px;">
+            <div class="search-bar">
+                <input type="text" name="search"
+                       th:value="${search}"
+                       placeholder="Rechercher un matériau (nom, type...)"/>
+                <button type="submit" class="btn btn-primary btn-sm">Rechercher</button>
+                <a th:if="${search}" th:href="@{/architect/catalog}"
+                   class="btn btn-ghost btn-sm">✕ Effacer</a>
+            </div>
+        </form>
+
+        <!-- Empty -->
+        <div th:if="${items.isEmpty()}" class="empty-state" style="text-align:center;">
+            <div class="empty-icon">🔍</div>
+            <h3 style="font-family:'Playfair Display',serif;margin-bottom:8px;">
+                Aucun résultat
+            </h3>
+            <p th:if="${search}">
+                Aucun matériau trouvé pour "<span th:text="${search}"></span>".
+            </p>
+            <p th:unless="${search}">
+                Aucun matériau disponible dans le catalogue pour l'instant.
+            </p>
+        </div>
+
+        <!-- Catalog grid -->
+        <div th:unless="${items.isEmpty()}" class="catalog-grid">
+            <div th:each="item : ${items}" class="catalog-card">
+                <div class="catalog-card-body">
+
+                    <!-- Type badge -->
+                    <div style="margin-bottom:10px;">
+            <span class="badge badge-neutral" style="font-size:10px;"
+                  th:text="${item.type}">Type</span>
+                    </div>
+
+                    <div class="catalog-title" th:text="${item.name}">Nom</div>
+
+                    <div class="catalog-price" style="margin-top:8px;"
+                         th:text="${#numbers.formatDecimal(item.price, 1, 2)} + ' DT / ' + ${item.unit}">
+                    </div>
+
+                    <div class="catalog-chips">
+            <span class="badge badge-neutral" style="font-size:11px;">
+              📦 <span th:text="${item.quantity}">0</span>
+              <span th:text="${item.unit}">u</span> dispo
+            </span>
+                        <span class="badge badge-neutral" style="font-size:11px;"
+                              th:if="${item.location}">
+              📍 <span th:text="${item.location}">Lieu</span>
+            </span>
+                    </div>
+
+                    <div th:if="${item.description}"
+                         style="font-size:12.5px;color:var(--text-muted);margin:10px 0;line-height:1.5;"
+                         th:text="${item.description}"></div>
+
+                    <!-- Fournisseur -->
+                    <div style="border-top:1px solid var(--border-light);padding-top:14px;margin-top:14px;">
+                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                            <div class="avatar-sm" style="width:32px;height:32px;font-size:11px;"
+                                 th:text="${#strings.substring(item.supplier.fullName, 0, 1).toUpperCase()}">S</div>
+                            <div>
+                                <div style="font-weight:700;font-size:13px;"
+                                     th:text="${item.supplier.fullName}">Fournisseur</div>
+                                <div style="font-size:11px;color:var(--text-muted);"
+                                     th:text="${item.location}">Localisation</div>
+                            </div>
+                        </div>
+                        <!-- Contact -->
+                        <a th:href="'mailto:' + ${item.supplier.email}"
+                           class="btn btn-ghost btn-sm"
+                           style="width:100%;justify-content:center;">
+                            📧 Contacter le fournisseur
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</main>
+</body>
+</html>

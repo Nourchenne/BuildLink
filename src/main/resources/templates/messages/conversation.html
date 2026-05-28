@@ -1,0 +1,268 @@
+﻿<!DOCTYPE html>
+<html lang="fr"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Conversation — BuildLink</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <link rel="stylesheet" th:href="@{/css/accessibility.css}"/>
+    <style>
+        .chat-container {
+            display: flex; flex-direction: column;
+            height: calc(100vh - 120px);
+            min-height: 500px;
+            background: var(--white);
+            border-radius: 16px;
+            border: 1px solid var(--border-light);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+        .chat-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--border-light);
+            display: flex; align-items: center; gap: 14px;
+            background: var(--white);
+            flex-shrink: 0;
+        }
+        .chat-messages {
+            flex: 1; overflow-y: auto;
+            padding: 24px 28px;
+            display: flex; flex-direction: column; gap: 16px;
+            background: var(--bg);
+            scroll-behavior: smooth;
+        }
+        .msg-row { display: flex; align-items: flex-end; gap: 10px; }
+        .msg-row.me { flex-direction: row-reverse; }
+        /* Le wrapper contrôle la largeur max — pas la bulle elle-même */
+        .msg-wrap {
+            max-width: 65%;
+            min-width: 90px;
+            display: flex;
+            flex-direction: column;
+        }
+        .msg-row.me .msg-wrap { align-items: flex-end; }
+        .msg-row:not(.me) .msg-wrap { align-items: flex-start; }
+        .msg-bubble {
+            padding: 11px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            line-height: 1.6;
+            overflow-wrap: break-word;
+            word-break: normal;
+            white-space: pre-wrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+            display: inline-block;
+            max-width: 100%;
+        }
+        .msg-bubble.other {
+            background: var(--white);
+            border: 1px solid var(--border-light);
+            border-bottom-left-radius: 5px;
+            color: var(--text);
+        }
+        .msg-bubble.me {
+            background: var(--grad-primary);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+        .msg-time {
+            font-size: 11px; color: var(--text-light);
+            padding: 2px 6px; margin-top: 4px;
+            white-space: nowrap;
+        }
+        .msg-row.me .msg-time { text-align: right; }
+        .chat-input-area {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border-light);
+            background: var(--white);
+            display: flex; gap: 12px; align-items: flex-end;
+            flex-shrink: 0;
+        }
+        .chat-textarea {
+            flex: 1; padding: 13px 18px;
+            border: 1.5px solid var(--border);
+            border-radius: 24px; font-size: 14px;
+            resize: none; outline: none;
+            font-family: inherit; background: var(--bg);
+            color: var(--text); line-height: 1.5;
+            transition: all 0.2s;
+            max-height: 140px; min-height: 48px;
+        }
+        .chat-textarea:focus {
+            border-color: var(--accent);
+            background: var(--white);
+            box-shadow: 0 0 0 3px rgba(139,94,60,0.1);
+        }
+        .send-btn {
+            width: 48px; height: 48px; border-radius: 50%;
+            background: var(--grad-primary); color: white;
+            border: none; font-size: 18px; cursor: pointer;
+            display: flex; align-items: center;
+            justify-content: center; flex-shrink: 0;
+            transition: all 0.18s;
+            box-shadow: 0 4px 12px rgba(139,94,60,0.3);
+        }
+        .send-btn:hover { transform: scale(1.08); box-shadow: 0 6px 18px rgba(139,94,60,0.4); }
+    </style>
+</head>
+<body>
+
+<nav class="top-nav">
+    <a th:href="@{/}" class="brand">🏗️ BuildLink</a>
+    <div class="nav-right">
+        <div class="notif-wrap">
+      <a th:href="@{/notifications}" class="notif-btn" title="Notifications">🔔
+        <span class="notif-badge" th:if="${unreadNotifications != null and unreadNotifications > 0}" th:text="${unreadNotifications}"></span>
+      </a>
+    </div>
+    <div class="user-chip">
+            <div class="avatar-sm"
+                 th:text="${currentUser != null ? #strings.substring(currentUser.fullName,0,1).toUpperCase() : 'U'}">U</div>
+            <span class="user-name-text" th:text="${currentUser != null ? currentUser.fullName : ''}"  ></span>
+        </div>
+        <form th:action="@{/auth/logout}" method="post" style="display:inline">
+            <button type="submit" class="logout-link">Déconnexion</button>
+        </form>
+    </div>
+</nav>
+
+<aside class="sidebar">
+  <div class="sidebar-user-block">
+    <div class="avatar-sm" th:text="${currentUser != null ? #strings.substring(currentUser.fullName,0,1).toUpperCase() : 'U'}">U</div>
+    <div class="sidebar-user-meta">
+      <div class="sidebar-user-name" th:text="${currentUser != null ? currentUser.fullName : ''}"></div>
+      <div class="sidebar-user-role" sec:authorize="hasRole('CLIENT')">Client</div>
+      <div class="sidebar-user-role" sec:authorize="hasRole('ARCHITECT')">Architecte</div>
+      <div class="sidebar-user-role" sec:authorize="hasRole('SUPPLIER')">Fournisseur</div>
+    </div>
+  </div>
+  <div class="sidebar-section-label">Navigation</div>
+  <!-- CLIENT -->
+  <div sec:authorize="hasRole('CLIENT')">
+    <a th:href="@{/client/dashboard}" class="sidebar-link"><span class="sl-icon">🏠</span> Dashboard</a>
+    <a th:href="@{/client/projects}" class="sidebar-link"><span class="sl-icon">📋</span> Mes Projets</a>
+    <a th:href="@{/client/projects/new}" class="sidebar-link"><span class="sl-icon">➕</span> Nouveau Projet</a>
+    <a th:href="@{/client/architects}" class="sidebar-link"><span class="sl-icon">🏛️</span> Trouver un architecte</a>
+  </div>
+  <!-- ARCHITECTE -->
+  <div sec:authorize="hasRole('ARCHITECT')">
+    <a th:href="@{/architect/dashboard}" class="sidebar-link"><span class="sl-icon">📐</span> Dashboard</a>
+    <a th:href="@{/architect/projects}" class="sidebar-link"><span class="sl-icon">📋</span> Mes Projets</a>
+    <a th:href="@{/architect/catalog}" class="sidebar-link"><span class="sl-icon">🏪</span> Catalogue fournisseurs</a>
+    <a th:href="@{/architect/requests}" class="sidebar-link"><span class="sl-icon">📢</span> Mes Demandes</a>
+  </div>
+  <!-- FOURNISSEUR -->
+  <div sec:authorize="hasRole('SUPPLIER')">
+    <a th:href="@{/supplier/dashboard}" class="sidebar-link"><span class="sl-icon">🏭</span> Dashboard</a>
+    <a th:href="@{/supplier/catalog}" class="sidebar-link"><span class="sl-icon">📦</span> Mon Catalogue</a>
+    <a th:href="@{/supplier/marketplace}" class="sidebar-link"><span class="sl-icon">🏪</span> Marketplace</a>
+    <a th:href="@{/supplier/orders}" class="sidebar-link"><span class="sl-icon">🚚</span> Mes Commandes</a>
+  </div>
+  <!-- COMMUN : Messages (actif) → Notifications → Suivi (même ordre que les templates dédiés) -->
+  <a th:href="@{/messages}" class="sidebar-link active"><span class="sl-icon">💬</span> Messages</a>
+  <a th:href="@{/notifications}" class="sidebar-link"><span class="sl-icon">🔔</span> Notifications</a>
+  <!-- Suivi selon le rôle (après Notifications, comme dans tous les templates dédiés) -->
+  <a sec:authorize="hasRole('CLIENT')" th:href="@{/client/tracking}" class="sidebar-link"><span class="sl-icon">📊</span> Suivi des projets</a>
+  <a sec:authorize="hasRole('ARCHITECT')" th:href="@{/architect/tracking}" class="sidebar-link"><span class="sl-icon">📊</span> Suivi des commandes</a>
+  <a sec:authorize="hasRole('SUPPLIER')" th:href="@{/supplier/tracking}" class="sidebar-link"><span class="sl-icon">📊</span> Suivi des livraisons</a>
+  <div style="flex:1"></div>
+  <div class="sidebar-divider"></div>
+  <form th:action="@{/auth/logout}" method="post" style="padding:0 8px">
+    <button type="submit" class="sidebar-link sidebar-logout"><span class="sl-icon">🚪</span> Déconnexion</button>
+  </form>
+</aside>
+
+<main class="main-content" style="padding:14px 24px 0;display:flex;flex-direction:column;overflow:hidden;">
+
+    <div class="breadcrumb" style="margin-bottom:14px;">
+        <a th:href="@{/messages}">Messages</a>
+        <span>›</span>
+        <span style="color:var(--text)"
+              th:text="${conversation.getOtherParticipant(currentUserEmail).fullName}">Nom</span>
+    </div>
+
+    <div class="chat-container">
+
+        <!-- Header -->
+        <div class="chat-header">
+            <div class="avatar-sm" style="width:42px;height:42px;font-size:15px;flex-shrink:0;"
+                 th:text="${#strings.substring(conversation.getOtherParticipant(currentUserEmail).fullName,0,1).toUpperCase()}">
+            </div>
+            <div>
+                <div style="font-weight:700;font-size:15px;"
+                     th:text="${conversation.getOtherParticipant(currentUserEmail).fullName}">Nom</div>
+                <div style="font-size:12px;color:var(--text-muted);" th:text="${conversation.subject}">Sujet</div>
+                <div th:if="${conversation.project != null}"
+                     style="font-size:11px;color:var(--primary);font-weight:600;margin-top:2px;">
+                    🏗️ <span th:text="${conversation.project.title}">Projet</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        <div class="chat-messages" id="chatMessages">
+
+            <div th:if="${messages.isEmpty()}"
+                 style="text-align:center;color:var(--text-muted);font-size:13px;margin:auto;">
+                Démarrez la conversation en envoyant un message.
+            </div>
+
+            <div th:each="msg : ${messages}">
+                <div class="msg-row"
+                     th:classappend="${msg.sender.email == currentUserEmail ? 'me' : ''}">
+                    <div class="avatar-sm"
+                         style="width:32px;height:32px;font-size:12px;flex-shrink:0;"
+                         th:if="${msg.sender.email != currentUserEmail}"
+                         th:text="${#strings.substring(msg.sender.fullName,0,1).toUpperCase()}">
+                    </div>
+                    <div class="msg-wrap">
+                        <div class="msg-bubble"
+                             th:classappend="${msg.sender.email == currentUserEmail ? 'me' : 'other'}"
+                             th:text="${msg.content}">Message</div>
+                        <div class="msg-time"
+                             th:text="${#temporals.format(msg.sentAt,'HH:mm · dd/MM')}">heure</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input -->
+        <div class="chat-input-area">
+            <form th:action="@{/messages/{id}/send(id=${conversation.id})}"
+                  method="post" style="display:flex;gap:10px;width:100%;align-items:flex-end;">
+        <textarea name="content" class="chat-textarea"
+                  placeholder="Écrire un message..."
+                  rows="1"
+                  onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();this.form.submit();}"></textarea>
+                <button type="submit" class="send-btn" title="Envoyer">➤</button>
+            </form>
+        </div>
+
+    </div>
+
+</main>
+
+<script>
+    // Scroll automatique vers le bas
+    const chatMessages = document.getElementById('chatMessages');
+    if (chatMessages) {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Auto-resize textarea
+    const textarea = document.querySelector('.chat-textarea');
+    if (textarea) {
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 140) + 'px';
+        });
+        // Focus automatique
+        textarea.focus();
+    }
+</script>
+
+</body>
+</html>
